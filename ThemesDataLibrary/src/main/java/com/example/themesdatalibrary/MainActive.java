@@ -65,7 +65,6 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
     ThemesEntity entity = new ThemesEntity();
 
     boolean isDownload = false;
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
