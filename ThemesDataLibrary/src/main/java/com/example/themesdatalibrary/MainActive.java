@@ -52,12 +52,13 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
     public static final String Authorization = "S^e#r7#&01)b8r*(#%^@T";
     public static final String  contentType ="application/json";
     public final int  REQUEST_CODE_FOR_PERMISSIONS = 123;
-    RecyclerView recyclerView;
+    private RecyclerView recyclerView ;
     String url = "";
     String name = "";
     ProgressBar progress;
     Button downloadBtn;
-    Context context;
+    static Context context;
+    static OnButtonClickListener listener;
 
 
     ThemesRoomDatabase db;
@@ -70,8 +71,7 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
         setContentView(R.layout.activity_main);
         db = ThemesRoomDatabase.getInstance(MainActive.this);
         Date dateobj = new Date();
-
-
+        recyclerView = findViewById(R.id.show_theme_data_recycler_view);
 
 
         SharedPreferences sharedPref = getSharedPreferences("userData",MODE_PRIVATE);
@@ -81,7 +81,7 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
         if(!TextUtils.isEmpty(loadFirstTime) && (dateobj.getTime() - time )<= 30000) {
 
             List<ThemesEntity> dbThemesList = db.themesDao().getThemesAllList();
-            generateDataList(null,dbThemesList);
+            generateDataList(null,dbThemesList, recyclerView);
 
             Toast.makeText(getApplicationContext(),(dateobj.getTime()-time)+"\n Before 30 seconds",Toast.LENGTH_SHORT).show();
 
@@ -91,7 +91,7 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
 
             long date = dateobj.getTime();
             SharedPreferences.Editor edit = sharedPref.edit();
-            allStationData(context);
+            allStationData(recyclerView);
             edit.putString("loadFirstTime", "No");
             edit.putLong("time", date);
             edit.commit();
@@ -128,8 +128,8 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
     }
 
 
-    public void allStationData(Context context){
-        this.context = context;
+    public static void allStationData(RecyclerView recyclerView){
+
         Retrofit retrofit=new Retrofit.Builder().baseUrl("http://api.rocksplayer.com/")
                 .addConverterFactory(GsonConverterFactory.create()).build();
         RequestInterface requestInterface=retrofit.create(RequestInterface.class);
@@ -138,7 +138,7 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
             @Override
             public void onResponse(Call<RetroData> call, Response<RetroData> response) {
                 RetroData model = response.body();
-                if (model != null) { generateDataList((model.getData()), null); }
+                if (model != null) { generateDataList((model.getData()), null, recyclerView); }
                 else
                 { Toast.makeText(context ,"No data to show", Toast.LENGTH_SHORT).show(); }
 
@@ -147,14 +147,15 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
             @Override
             public void onFailure(Call<RetroData> call, Throwable t) {
                 //progressDialog.dismiss();
-                Toast.makeText(MainActive.this,"onFailure",Toast.LENGTH_SHORT).show();
+                Toast.makeText(context,"onFailure",Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    public void generateDataList(List<Datum> themeList,List<ThemesEntity> dbThemeList) {
+
+    public static void generateDataList(List<Datum> themeList,List<ThemesEntity> dbThemeList,RecyclerView recyclerView ) {
         CustomAdapter adapter;
-        recyclerView = findViewById(R.id.show_theme_data_recycler_view);
+        //recyclerView = findViewById(R.id.show_theme_data_recycler_view);
 
         //List<ThemesEntity> nList = new ArrayList<>();
         /*for(ThemesEntity item : dbThemeList)
@@ -173,12 +174,12 @@ public class MainActive extends AppCompatActivity implements  OnButtonClickListe
                     mList.add(item);
                 }
             }
-            adapter = new CustomAdapter(this, mList, null, this);
+            adapter = new CustomAdapter(context, mList, null, listener);
         }
         else {
-            adapter = new CustomAdapter(this, null, dbThemeList, this);
+            adapter = new CustomAdapter(context, null, dbThemeList, listener);
         }
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActive.this, 3);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(context, 3);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
