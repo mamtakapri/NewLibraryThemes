@@ -48,7 +48,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements  OnButtonClickListener{
+public class MainActive extends AppCompatActivity implements  OnButtonClickListener{
     public static final String Authorization = "S^e#r7#&01)b8r*(#%^@T";
     public static final String  contentType ="application/json";
     public final int  REQUEST_CODE_FOR_PERMISSIONS = 123;
@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
     String name = "";
     ProgressBar progress;
     Button downloadBtn;
+    Context context;
 
 
     ThemesRoomDatabase db;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        db = ThemesRoomDatabase.getInstance(MainActivity.this);
+        db = ThemesRoomDatabase.getInstance(MainActive.this);
         Date dateobj = new Date();
 
 
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
 
             long date = dateobj.getTime();
             SharedPreferences.Editor edit = sharedPref.edit();
-            allStationData();
+            allStationData(context);
             edit.putString("loadFirstTime", "No");
             edit.putLong("time", date);
             edit.commit();
@@ -127,7 +128,8 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
     }
 
 
-    private void allStationData(){
+    public void allStationData(Context context){
+        this.context = context;
         Retrofit retrofit=new Retrofit.Builder().baseUrl("http://api.rocksplayer.com/")
                 .addConverterFactory(GsonConverterFactory.create()).build();
         RequestInterface requestInterface=retrofit.create(RequestInterface.class);
@@ -138,14 +140,14 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
                 RetroData model = response.body();
                 if (model != null) { generateDataList((model.getData()), null); }
                 else
-                { Toast.makeText(getApplicationContext(),"No data to show", Toast.LENGTH_SHORT).show(); }
+                { Toast.makeText(context ,"No data to show", Toast.LENGTH_SHORT).show(); }
 
             }
 
             @Override
             public void onFailure(Call<RetroData> call, Throwable t) {
                 //progressDialog.dismiss();
-                Toast.makeText(MainActivity.this,"onFailure",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActive.this,"onFailure",Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -176,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
         else {
             adapter = new CustomAdapter(this, null, dbThemeList, this);
         }
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActivity.this, 3);
+        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(MainActive.this, 3);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
 
@@ -233,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
         }
         else
         {
-            Toast.makeText(MainActivity.this, "File Not Exist", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActive.this, "File Not Exist", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -281,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
 
                 if (!isDownload) {
 
-                    Toast.makeText(MainActivity.this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActive.this, file.getAbsolutePath(), Toast.LENGTH_SHORT).show();
                     super.onPostExecute(file);
                     isDownload = true;
                     entity.setDownload_status(true);
@@ -290,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements  OnButtonClickLis
                     progress.setVisibility(View.GONE);
                 }
                 else {
-                    Toast.makeText(MainActivity.this, "Already Existed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActive.this, "Already Existed", Toast.LENGTH_SHORT).show();
                     progress.setVisibility(View.GONE);
                 }
             }
